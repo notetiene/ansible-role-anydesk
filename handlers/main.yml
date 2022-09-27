@@ -1,0 +1,10 @@
+---
+# handlers file for anydesk
+
+- name: restart AnyDesk
+  become: true
+  service:
+    name: anydesk
+    state: "{{ anydesk_restart_handler_state }}"
+  ignore_errors: "{{ ansible_check_mode }}"
+  when: anydesk_service_manage | bool

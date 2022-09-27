@@ -1,0 +1,39 @@
+---
+- include_tasks: apt-repo.yml
+  when: ansible_os_family == 'Debian'
+
+- name: install AnyDesk
+  become: true
+  package:
+    name: anydesk
+    state: latest
+  notify: restart AnyDesk
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: ensure AnyDesk is started and enabled at boot
+  become: true
+  service:
+    name: anydesk
+    state: "{{ anydesk_service_state }}"
+    enabled: "{{ anydesk_service_enabled }}"
+  ignore_errors: "{{ ansible_check_mode }}"
+  when: anydesk_service_manage | bool
+
+- name: configure AnyDesk System.conf file
+  become: true
+  block:
+    - file:
+        path: "{{ anydesk_system_conf_file | dirname }}"
+        state: directory
+    - lineinfile:
+        path: "{{ anydesk_system_conf_file }}"
+        regexp: "^{{ item.name }}"
+        line: "{{ item.name }}={{ item.value }}"
+        create: true
+      ignore_errors: "{{ ansible_check_mode }}"
+      with_items: "{{ anydesk_system_options }}"
+      notify: restart AnyDesk
+
+- name: configure AnyDesk System.conf file for users
+  include_tasks: options-per-user.yml
+  with_items: "{{ anydesk_system_options_per_user }}"

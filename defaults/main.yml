@@ -1,0 +1,22 @@
+---
+# APT key
+anydesk_apt_key_url: https://keys.anydesk.com/repos/DEB-GPG-KEY
+anydesk_apt_key_id: D56311E5FF3B6F39D5A16ABE18DF3741CDFFDE29
+anydesk_apt_keyring_file: /etc/apt/trusted.gpg.d/anydesk-archive-keyring.gpg
+
+# APT repository
+anydesk_apt_repository: http://deb.anydesk.com
+anydesk_apt_codename: all
+anydesk_apt_channel: main
+anydesk_apt_filename: anydesk-stable
+
+# Service options
+anydesk_service_manage: true
+anydesk_service_state: started
+anydesk_service_enabled: true
+anydesk_restart_handler_state: restarted
+
+# AnyDesk Configuration
+anydesk_system_conf_file: /etc/anydesk/system.conf
+anydesk_system_option: []
+anydesk_system_options_per_user: []

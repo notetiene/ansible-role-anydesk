@@ -1,0 +1,28 @@
+---
+- name: add AnyDesk APT key
+  become: true
+  apt_key:
+    url: "{{ anydesk_apt_key_url }}"
+    id: "{{ anydesk_apt_key_id }}"
+    keyring: "{{ anydesk_apt_keyring_file }}"
+    state: present
+
+- name: get system architecture
+  command: dpkg --print-architecture
+  register: _system_arch
+  changed_when: false
+  check_mode: false
+- set_fact:
+    _system_arch: "{{ _system_arch.stdout }}"
+
+- name: add AnyDesk APT repository
+  become: true
+  apt_repository:
+    repo: >
+      deb [arch={{ _system_arch }}
+      signed-by={{ anydesk_apt_keyring_file }}]
+      {{ anydesk_apt_repository }}
+      {{ anydesk_apt_codename }}
+      {{ anydesk_apt_channel }}
+    filename: "{{ anydesk_apt_filename }}"
+    state: present

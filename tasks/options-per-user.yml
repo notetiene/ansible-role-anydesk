@@ -1,0 +1,34 @@
+---
+# This file is necessary since we can't use loop in blocks
+
+- become: true
+  block:
+    - name: get the current user info
+      getent:
+        database: passwd
+        key: "{{ item.user }}"
+        split: ":"
+    - set_fact:
+        # Get the current user home path
+        anydesk__current_path: "{{ getent_passwd[item.user][4] }}"
+    - set_fact:
+        anydesk__current_config: "{{ item.config_file | default(anydesk__current_path + '/.anydesk/system.conf') }}"
+    - name: check that the config directory exists
+      file:
+        path: "{{ anydesk__current_config | dirname}}"
+        owner: "{{ item.user }}"
+        group: "{{ item.user }}"
+        mode: '0766'
+        state: directory
+    - name: check that a user option is present in its AnyDesk config
+      lineinfile:
+        path: "{{ anydesk__current_config }}"
+        regexp: "^{{ options.name }}"
+        line: "{{ options.name }}={{ options.value }}"
+        create: true
+        owner: "{{ item.user }}"
+        group: "{{ item.user }}"
+      with_items: "{{ item.options }}"
+      loop_control:
+        loop_var: options
+      ignore_errors: "{{ ansible_check_mode }}"
