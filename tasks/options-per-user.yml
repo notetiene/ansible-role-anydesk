@@ -18,7 +18,7 @@
         path: "{{ anydesk__current_config | dirname}}"
         owner: "{{ item.user }}"
         group: "{{ item.user }}"
-        mode: '0766'
+        mode: '0755'
         state: directory
     - name: check that a user option is present in its AnyDesk config
       lineinfile:
