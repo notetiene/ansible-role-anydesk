@@ -1,9 +1,9 @@
 Anydesk Ansible Role
 ========================
 
-[![GitHub](https://img.shields.io/github/license/notetiene/ansible-role-anydesk?style=for-the-badge)](https://github.com/notetiene/ansible-role-anydesk)
-[![Ansible Role](https://img.shields.io/ansible/role/60428?style=for-the-badge)](https://galaxy.ansible.com/notetiene/anydesk)
-[![Ansible Role](https://img.shields.io/ansible/role/d/60428?style=for-the-badge)](https://galaxy.ansible.com/notetiene/anydesk)
+![GitHub License](https://img.shields.io/github/license/notetiene/ansible-role-anydesk?style=for-the-badge)
+![Ansible Role](https://img.shields.io/ansible/role/d/notetiene/anydesk?style=for-the-badge&link=https%3A%2F%2Fgalaxy.ansible.com%2Fnotetiene%2Fanydesk)
+![Ansible Role](https://img.shields.io/ansible/role/d/notetiene/anydesk?style=for-the-badge&link=https%3A%2F%2Fgalaxy.ansible.com%2Fnotetiene%2Fanydesk)
 
 This role installs AnyDesk on a Linux System. Currently only support Ubuntu 20.04, but patches are welcomed.
 
