@@ -1,4 +1,12 @@
 ---
+- name: remove old AnyDesk APT key path
+  become: true
+  file:
+    # Path used by previous versions that is now deprecated.
+    # See:  https://wiki.debian.org/DebianRepository/UseThirdParty#OpenPGP_certificate_distribution
+    path: /etc/apt/trusted.gpg.d/anydesk-archive-keyring.gpg
+    state: absent
+
 - name: add AnyDesk APT key
   become: true
   apt_key:
