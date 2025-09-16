@@ -1,7 +1,7 @@
 ---
 # APT key
 anydesk_apt_key_url: https://keys.anydesk.com/repos/DEB-GPG-KEY
-anydesk_apt_key_id: D56311E5FF3B6F39D5A16ABE18DF3741CDFFDE29
+anydesk_apt_key_id: 06B5EA2FAE208E7CDA9761DCA2FB21D5A8772835
 anydesk_apt_keyring_file: /usr/share/keyrings/anydesk-archive-keyring.gpg
 
 # APT repository
