@@ -10,10 +10,36 @@ This role installs AnyDesk on a Linux System. Currently only support Ubuntu 20.0
 Requirements
 ------------
 
-No requirements.
+ansible-core 2.15 or later (`ansible.builtin.deb822_repository`). On
+Debian-based systems the role installs `gpg` and `python3-debian` itself.
 
 Role Variables
 --------------
+
+### APT repository
+
+The role writes a deb822 source,
+`/etc/apt/sources.list.d/<anydesk_apt_filename>.sources`, signed by
+`anydesk_apt_keyring_file` only (no `apt-key`, which APT 3 removed). The
+key is downloaded to `anydesk_apt_key_download_path` and installed only when
+it holds `anydesk_apt_key_id`.
+
+- `anydesk_apt_key_url` \
+  **Default**: `https://keys.anydesk.com/repos/DEB-GPG-KEY`
+- `anydesk_apt_key_id` \
+  **Default**: `06B5EA2FAE208E7CDA9761DCA2FB21D5A8772835` \
+  Full fingerprint the downloaded key must hold.
+- `anydesk_apt_key_download_path` \
+  **Default**: `/tmp/anydesk-apt-key.asc`
+- `anydesk_apt_keyring_file` \
+  **Default**: `/etc/apt/keyrings/anydesk.asc`
+- `anydesk_apt_legacy_files` \
+  **Default**: the one-line source and the keyrings of earlier versions \
+  Removed before the deb822 source is written.
+- `anydesk_apt_repository` \
+  **Default**: `https://deb.anydesk.com`
+- `anydesk_apt_codename`, `anydesk_apt_channel`, `anydesk_apt_filename` \
+  **Default**: `all`, `main`, `anydesk-stable`
 
 ### AnyDesk service
 

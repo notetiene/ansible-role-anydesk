@@ -3,13 +3,15 @@ galaxy_info:
   author: Etienne Prud’homme
   description: Install AnyDesk on Linux.
   license: license (MIT)
-  min_ansible_version: 2.4
+  min_ansible_version: '2.15'
   platforms:
     - name: Ubuntu
       versions:
         - bionic
         - focal
         - jammy
+        - noble
+        - resolute
   galaxy_tags:
     - anydesk
     - desktop

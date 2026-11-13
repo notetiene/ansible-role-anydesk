@@ -1,36 +1,96 @@
 ---
-- name: remove old AnyDesk APT key path
-  become: true
-  file:
-    # Path used by previous versions that is now deprecated.
-    # See:  https://wiki.debian.org/DebianRepository/UseThirdParty#OpenPGP_certificate_distribution
-    path: /etc/apt/trusted.gpg.d/anydesk-archive-keyring.gpg
-    state: absent
+# apt-key is gone from APT 3 (Ubuntu 25.04 and later): the key is downloaded,
+# checked against anydesk_apt_key_id, and used only for the AnyDesk source
+# (signed-by), as https://wiki.debian.org/DebianRepository/UseThirdParty asks.
 
-- name: add AnyDesk APT key
+- name: install APT key and source dependencies
   become: true
-  apt_key:
-    url: "{{ anydesk_apt_key_url }}"
-    id: "{{ anydesk_apt_key_id }}"
-    keyring: "{{ anydesk_apt_keyring_file }}"
+  ansible.builtin.package:
+    name:
+      - gpg
+      - python3-debian
     state: present
 
+- name: remove legacy AnyDesk APT source and keyrings
+  become: true
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop: "{{ anydesk_apt_legacy_files | difference([anydesk_apt_keyring_file]) }}"
+  register: _anydesk_legacy
+
+- name: download AnyDesk APT key
+  ansible.builtin.get_url:
+    url: "{{ anydesk_apt_key_url }}"
+    dest: "{{ anydesk_apt_key_download_path }}"
+    mode: "0644"
+    force: true
+
+- name: read AnyDesk APT key fingerprints
+  ansible.builtin.command:
+    argv:
+      - gpg
+      - --show-keys
+      - --with-colons
+      - "{{ anydesk_apt_key_download_path }}"
+  register: _anydesk_key
+  changed_when: false
+  check_mode: false
+  failed_when: false
+
+- name: check AnyDesk APT key fingerprint
+  ansible.builtin.assert:
+    that:
+      - _anydesk_key.rc == 0
+      - anydesk_apt_key_id | upper in _anydesk_fingerprints
+    fail_msg: >-
+      {{ anydesk_apt_key_url }} does not hold {{ anydesk_apt_key_id }}
+      (fingerprints: {{ _anydesk_fingerprints | join(', ') }})
+    quiet: true
+  vars:
+    _anydesk_fingerprints: >-
+      {{ _anydesk_key.stdout_lines | default([])
+         | select('match', '^fpr:') | map('split', ':')
+         | map(attribute=9) | list }}
+  when: not ansible_check_mode or _anydesk_key.rc == 0
+
+- name: install AnyDesk APT key
+  become: true
+  ansible.builtin.copy:
+    src: "{{ anydesk_apt_key_download_path }}"
+    dest: "{{ anydesk_apt_keyring_file }}"
+    remote_src: true
+    owner: root
+    group: root
+    mode: "0644"
+  register: _anydesk_keyring
+  ignore_errors: "{{ ansible_check_mode }}"
+
 - name: get system architecture
-  command: dpkg --print-architecture
+  ansible.builtin.command: dpkg --print-architecture
   register: _system_arch
   changed_when: false
   check_mode: false
-- set_fact:
-    _system_arch: "{{ _system_arch.stdout }}"
 
 - name: add AnyDesk APT repository
   become: true
-  apt_repository:
-    repo: >
-      deb [arch={{ _system_arch }}
-      signed-by={{ anydesk_apt_keyring_file }}]
-      {{ anydesk_apt_repository }}
-      {{ anydesk_apt_codename }}
-      {{ anydesk_apt_channel }}
-    filename: "{{ anydesk_apt_filename }}"
+  ansible.builtin.deb822_repository:
+    name: "{{ anydesk_apt_filename }}"
+    uris:
+      - "{{ anydesk_apt_repository }}"
+    suites:
+      - "{{ anydesk_apt_codename }}"
+    components:
+      - "{{ anydesk_apt_channel }}"
+    architectures:
+      - "{{ _system_arch.stdout }}"
+    signed_by: "{{ anydesk_apt_keyring_file }}"
+    mode: "0644"
     state: present
+  register: _anydesk_repo
+
+- name: refresh APT cache for AnyDesk
+  become: true
+  ansible.builtin.apt:
+    update_cache: true
+  when: _anydesk_legacy is changed or _anydesk_keyring is changed or _anydesk_repo is changed

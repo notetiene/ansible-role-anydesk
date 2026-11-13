@@ -1,11 +1,20 @@
 ---
-# APT key
+# APT key: downloaded to anydesk_apt_key_download_path, installed to
+# anydesk_apt_keyring_file only when it holds anydesk_apt_key_id.
 anydesk_apt_key_url: https://keys.anydesk.com/repos/DEB-GPG-KEY
 anydesk_apt_key_id: 06B5EA2FAE208E7CDA9761DCA2FB21D5A8772835
-anydesk_apt_keyring_file: /usr/share/keyrings/anydesk-archive-keyring.gpg
+anydesk_apt_key_download_path: /tmp/anydesk-apt-key.asc
+anydesk_apt_keyring_file: /etc/apt/keyrings/anydesk.asc
 
-# APT repository
-anydesk_apt_repository: http://deb.anydesk.com
+# Files of earlier versions of this role, removed before the deb822 source
+# is written.
+anydesk_apt_legacy_files:
+  - /etc/apt/sources.list.d/anydesk-stable.list
+  - /etc/apt/trusted.gpg.d/anydesk-archive-keyring.gpg
+  - /usr/share/keyrings/anydesk-archive-keyring.gpg
+
+# APT repository (deb822: /etc/apt/sources.list.d/<anydesk_apt_filename>.sources)
+anydesk_apt_repository: https://deb.anydesk.com
 anydesk_apt_codename: all
 anydesk_apt_channel: main
 anydesk_apt_filename: anydesk-stable
