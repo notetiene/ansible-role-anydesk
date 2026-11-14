@@ -15,7 +15,7 @@
       ansible.builtin.set_fact:
         anydesk__current_config: >-
           {{ item.config_file
-             | default(getent_passwd[item.user][4] ~ '/.anydesk/system.conf') }}
+             | default(ansible_facts['getent_passwd'][item.user][4] ~ '/.anydesk/system.conf') }}
 
     - name: Create the AnyDesk configuration directory of {{ item.user }}
       ansible.builtin.file:
