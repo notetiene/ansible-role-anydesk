@@ -27,5 +27,5 @@ anydesk_restart_handler_state: restarted
 
 # AnyDesk Configuration
 anydesk_system_conf_file: /etc/anydesk/system.conf
-anydesk_system_option: []
+anydesk_system_options: []
 anydesk_system_options_per_user: []
