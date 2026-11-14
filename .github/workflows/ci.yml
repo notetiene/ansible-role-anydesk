@@ -41,6 +41,8 @@ jobs:
       - run: molecule test
         env:
           MOLECULE_DISTRO: ${{ matrix.distro }}
+          # Fail on top-level facts, which ansible-core 2.24 stops injecting.
+          ANSIBLE_INJECT_FACT_VARS: "false"
           PY_COLORS: "1"
           ANSIBLE_FORCE_COLOR: "1"
 
