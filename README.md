@@ -1,6 +1,7 @@
 AnyDesk Ansible Role
 ====================
 
+[![CI](https://img.shields.io/github/actions/workflow/status/notetiene/ansible-role-anydesk/ci.yml?branch=main&style=for-the-badge&label=CI)](https://github.com/notetiene/ansible-role-anydesk/actions/workflows/ci.yml)
 ![GitHub License](https://img.shields.io/github/license/notetiene/ansible-role-anydesk?style=for-the-badge)
 [![Ansible Role](https://img.shields.io/ansible/role/d/notetiene/anydesk?style=for-the-badge)](https://galaxy.ansible.com/ui/standalone/roles/notetiene/anydesk/)
 
@@ -132,6 +133,23 @@ Upgrading from 1.0.x
 writes `anydesk-stable.sources`. The play needs no change. The 1.0.x
 defaults defined `anydesk_system_option` (singular) by mistake; a play that
 did not set `anydesk_system_options` failed. 1.1.0 defines the right name.
+
+Testing
+-------
+
+The Molecule scenario starts from the state 1.0.x left on a host, runs the
+role, checks that a second run changes nothing and verifies the source, the
+removed legacy files and the options. It needs Docker:
+
+```sh
+pip install ansible-core molecule "molecule-plugins[docker]" docker
+MOLECULE_DISTRO=ubuntu2204 molecule test
+MOLECULE_DISTRO=ubuntu2604 molecule test
+```
+
+GitHub Actions runs yamllint, ansible-lint and both scenarios on every push,
+pull request and once a week. A tag also triggers the Galaxy import, which
+needs the `GALAXY_API_KEY` repository secret.
 
 License
 -------
