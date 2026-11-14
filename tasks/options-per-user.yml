@@ -1,34 +1,40 @@
 ---
-# This file is necessary since we can't use loop in blocks
+# Included once per entry of anydesk_system_options_per_user (item), since a
+# block cannot loop.
 
-- become: true
+- name: Configure the AnyDesk system.conf file of {{ item.user }}
+  become: true
   block:
-    - name: get the current user info
-      getent:
+    - name: Get the passwd entry of {{ item.user }}
+      ansible.builtin.getent:
         database: passwd
         key: "{{ item.user }}"
         split: ":"
-    - set_fact:
-        # Get the current user home path
-        anydesk__current_path: "{{ getent_passwd[item.user][4] }}"
-    - set_fact:
-        anydesk__current_config: "{{ item.config_file | default(anydesk__current_path + '/.anydesk/system.conf') }}"
-    - name: check that the config directory exists
-      file:
-        path: "{{ anydesk__current_config | dirname}}"
+
+    - name: Set the AnyDesk configuration file of {{ item.user }}
+      ansible.builtin.set_fact:
+        anydesk__current_config: >-
+          {{ item.config_file
+             | default(getent_passwd[item.user][4] ~ '/.anydesk/system.conf') }}
+
+    - name: Create the AnyDesk configuration directory of {{ item.user }}
+      ansible.builtin.file:
+        path: "{{ anydesk__current_config | dirname }}"
         owner: "{{ item.user }}"
         group: "{{ item.user }}"
-        mode: '0755'
+        mode: "0755"
         state: directory
-    - name: check that a user option is present in its AnyDesk config
-      lineinfile:
+
+    - name: Set the AnyDesk options of {{ item.user }}
+      ansible.builtin.lineinfile:
         path: "{{ anydesk__current_config }}"
         regexp: "^{{ options.name | regex_escape }}="
         line: "{{ options.name }}={{ options.value }}"
         create: true
         owner: "{{ item.user }}"
         group: "{{ item.user }}"
-      with_items: "{{ item.options }}"
+        mode: "0644"
+      loop: "{{ item.options }}"
       loop_control:
         loop_var: options
       ignore_errors: "{{ ansible_check_mode }}"

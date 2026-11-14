@@ -3,7 +3,7 @@
 # checked against anydesk_apt_key_id, and used only for the AnyDesk source
 # (signed-by), as https://wiki.debian.org/DebianRepository/UseThirdParty asks.
 
-- name: install APT key and source dependencies
+- name: Install APT key and source dependencies
   become: true
   ansible.builtin.package:
     name:
@@ -11,7 +11,7 @@
       - python3-debian
     state: present
 
-- name: remove legacy AnyDesk APT source and keyrings
+- name: Remove legacy AnyDesk APT source and keyrings
   become: true
   ansible.builtin.file:
     path: "{{ item }}"
@@ -19,14 +19,14 @@
   loop: "{{ anydesk_apt_legacy_files | difference([anydesk_apt_keyring_file]) }}"
   register: _anydesk_legacy
 
-- name: download AnyDesk APT key
+- name: Download AnyDesk APT key
   ansible.builtin.get_url:
     url: "{{ anydesk_apt_key_url }}"
     dest: "{{ anydesk_apt_key_download_path }}"
     mode: "0644"
     force: true
 
-- name: read AnyDesk APT key fingerprints
+- name: Read AnyDesk APT key fingerprints
   ansible.builtin.command:
     argv:
       - gpg
@@ -38,7 +38,7 @@
   check_mode: false
   failed_when: false
 
-- name: check AnyDesk APT key fingerprint
+- name: Check AnyDesk APT key fingerprint
   ansible.builtin.assert:
     that:
       - _anydesk_key.rc == 0
@@ -54,7 +54,7 @@
          | map(attribute=9) | list }}
   when: not ansible_check_mode or _anydesk_key.rc == 0
 
-- name: install AnyDesk APT key
+- name: Install AnyDesk APT key
   become: true
   ansible.builtin.copy:
     src: "{{ anydesk_apt_key_download_path }}"
@@ -66,13 +66,13 @@
   register: _anydesk_keyring
   ignore_errors: "{{ ansible_check_mode }}"
 
-- name: get system architecture
+- name: Get system architecture
   ansible.builtin.command: dpkg --print-architecture
   register: _system_arch
   changed_when: false
   check_mode: false
 
-- name: add AnyDesk APT repository
+- name: Add AnyDesk APT repository
   become: true
   ansible.builtin.deb822_repository:
     name: "{{ anydesk_apt_filename }}"
@@ -89,7 +89,7 @@
     state: present
   register: _anydesk_repo
 
-- name: refresh APT cache for AnyDesk
+- name: Refresh APT cache for AnyDesk
   become: true
   ansible.builtin.apt:
     update_cache: true

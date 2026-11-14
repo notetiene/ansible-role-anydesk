@@ -1,39 +1,45 @@
 ---
-- include_tasks: apt-repo.yml
-  when: ansible_os_family == 'Debian'
+- name: Configure the AnyDesk APT repository
+  ansible.builtin.include_tasks: apt-repo.yml
+  when: ansible_facts['os_family'] == 'Debian'
 
-- name: install AnyDesk
+- name: Install AnyDesk
   become: true
-  package:
+  ansible.builtin.package:
     name: anydesk
-    state: latest
-  notify: restart AnyDesk
+    state: latest  # noqa: package-latest -- the role keeps AnyDesk up to date
+  notify: Restart AnyDesk
   ignore_errors: "{{ ansible_check_mode }}"
 
-- name: ensure AnyDesk is started and enabled at boot
+- name: Ensure AnyDesk is started and enabled at boot
   become: true
-  service:
+  ansible.builtin.service:
     name: anydesk
     state: "{{ anydesk_service_state }}"
     enabled: "{{ anydesk_service_enabled }}"
   ignore_errors: "{{ ansible_check_mode }}"
   when: anydesk_service_manage | bool
 
-- name: configure AnyDesk System.conf file
+- name: Configure the AnyDesk system.conf file
   become: true
   block:
-    - file:
+    - name: Create the AnyDesk system configuration directory
+      ansible.builtin.file:
         path: "{{ anydesk_system_conf_file | dirname }}"
         state: directory
-    - lineinfile:
+        mode: "0755"
+
+    - name: Set the AnyDesk system options
+      ansible.builtin.lineinfile:
         path: "{{ anydesk_system_conf_file }}"
         regexp: "^{{ item.name | regex_escape }}="
         line: "{{ item.name }}={{ item.value }}"
         create: true
+        mode: "0644"
       ignore_errors: "{{ ansible_check_mode }}"
-      with_items: "{{ anydesk_system_options }}"
-      notify: restart AnyDesk
+      loop: "{{ anydesk_system_options }}"
+      notify: Restart AnyDesk
 
-- name: configure AnyDesk System.conf file for users
-  include_tasks: options-per-user.yml
-  with_items: "{{ anydesk_system_options_per_user }}"
+- name: Configure the AnyDesk system.conf file of each user
+  ansible.builtin.include_tasks: options-per-user.yml
+  loop: "{{ anydesk_system_options_per_user }}"
