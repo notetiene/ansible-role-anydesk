@@ -27,7 +27,7 @@
         state: directory
     - lineinfile:
         path: "{{ anydesk_system_conf_file }}"
-        regexp: "^{{ item.name }}"
+        regexp: "^{{ item.name | regex_escape }}="
         line: "{{ item.name }}={{ item.value }}"
         create: true
       ignore_errors: "{{ ansible_check_mode }}"

@@ -23,7 +23,7 @@
     - name: check that a user option is present in its AnyDesk config
       lineinfile:
         path: "{{ anydesk__current_config }}"
-        regexp: "^{{ options.name }}"
+        regexp: "^{{ options.name | regex_escape }}="
         line: "{{ options.name }}={{ options.value }}"
         create: true
         owner: "{{ item.user }}"
