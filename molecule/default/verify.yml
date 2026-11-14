@@ -1,0 +1,47 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Read the installed AnyDesk version
+      ansible.builtin.command: dpkg-query -W -f '${Version}' anydesk
+      register: _version
+      changed_when: false
+
+    - name: Read the AnyDesk APT source
+      ansible.builtin.slurp:
+        src: /etc/apt/sources.list.d/anydesk-stable.sources
+      register: _source
+
+    - name: Read the AnyDesk system options
+      ansible.builtin.slurp:
+        src: /etc/anydesk/system.conf
+      register: _system
+
+    - name: Read the AnyDesk options of root
+      ansible.builtin.slurp:
+        src: /root/.anydesk/system.conf
+      register: _user
+
+    - name: Look for the files of 1.0.x
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop:
+        - /etc/apt/sources.list.d/anydesk-stable.list
+        - /etc/apt/trusted.gpg.d/anydesk-archive-keyring.gpg
+        - /usr/share/keyrings/anydesk-archive-keyring.gpg
+      register: _legacy
+
+    - name: Check the result
+      ansible.builtin.assert:
+        that:
+          - _version.stdout | length > 0
+          - "'Signed-By: /etc/apt/keyrings/anydesk.asc' in _sources"
+          - "'URIs: https://deb.anydesk.com' in _sources"
+          - "'ad.security.interactive_access=2' in (_system.content | b64decode).splitlines()"
+          - >-
+            (_user.content | b64decode).splitlines()
+            == ['ad.security.interactive_accessX=5', 'ad.security.interactive_access=2']
+          - _legacy.results | selectattr('stat.exists') | list | length == 0
+      vars:
+        _sources: "{{ (_source.content | b64decode).splitlines() }}"

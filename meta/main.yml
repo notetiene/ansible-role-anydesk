@@ -1,6 +1,7 @@
 ---
 galaxy_info:
   role_name: anydesk
+  namespace: notetiene
   author: Etienne Prud’homme
   description: Install AnyDesk on Linux.
   license: license (MIT)

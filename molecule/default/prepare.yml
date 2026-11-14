@@ -1,0 +1,51 @@
+---
+# Recreate what role 1.0.x left on a host (one-line source, key in
+# trusted.gpg.d) and seed a user option next to one the role sets, so
+# converge tests the upgrade path and the exact option match.
+- name: Prepare
+  hosts: all
+  tasks:
+    # The image's policy-rc.d makes the AnyDesk postinst fail, and so does
+    # a missing xdg-desktop-menu (the postinst runs under set -e). A desktop
+    # has neither problem.
+    - name: Remove policy-rc.d
+      ansible.builtin.file:
+        path: /usr/sbin/policy-rc.d
+        state: absent
+
+    - name: Install xdg-utils
+      ansible.builtin.apt:
+        name: xdg-utils
+        update_cache: true
+
+    - name: Download the AnyDesk key as 1.0.x did
+      ansible.builtin.get_url:
+        url: https://keys.anydesk.com/repos/DEB-GPG-KEY
+        dest: /tmp/anydesk-legacy.asc
+        mode: "0644"
+
+    - name: Install the key in trusted.gpg.d as 1.0.x did
+      ansible.builtin.shell:
+        cmd: gpg --dearmor < /tmp/anydesk-legacy.asc > /etc/apt/trusted.gpg.d/anydesk-archive-keyring.gpg
+        creates: /etc/apt/trusted.gpg.d/anydesk-archive-keyring.gpg
+
+    - name: Write the one-line source of 1.0.x
+      ansible.builtin.copy:
+        dest: /etc/apt/sources.list.d/anydesk-stable.list
+        content: |
+          deb [signed-by=/etc/apt/trusted.gpg.d/anydesk-archive-keyring.gpg] http://deb.anydesk.com all main
+        mode: "0644"
+
+    - name: Create the AnyDesk directory of root
+      ansible.builtin.file:
+        path: /root/.anydesk
+        state: directory
+        mode: "0755"
+
+    - name: Seed the AnyDesk options of root
+      ansible.builtin.copy:
+        dest: /root/.anydesk/system.conf
+        content: |
+          ad.security.interactive_accessX=5
+          ad.security.interactive_access=1
+        mode: "0644"

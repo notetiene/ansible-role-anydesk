@@ -1,0 +1,19 @@
+---
+# The container has no display, so the service is kept stopped (it would
+# not stay up and idempotence would fail).
+- name: Converge
+  hosts: all
+  vars:
+    anydesk_service_enabled: false
+    anydesk_service_state: stopped
+    anydesk_restart_handler_state: stopped
+    anydesk_system_options:
+      - name: ad.security.interactive_access
+        value: 2
+    anydesk_system_options_per_user:
+      - user: root
+        options:
+          - name: ad.security.interactive_access
+            value: 2
+  roles:
+    - role: notetiene.anydesk

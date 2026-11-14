@@ -1,0 +1,25 @@
+---
+# Run with MOLECULE_DISTRO=ubuntu2204 or ubuntu2604 (the default). The
+# geerlingguy images boot systemd, so the service tasks run for real.
+driver:
+  name: docker
+platforms:
+  - name: anydesk-${MOLECULE_DISTRO:-ubuntu2604}
+    image: geerlingguy/docker-${MOLECULE_DISTRO:-ubuntu2604}-ansible:latest
+    pre_build_image: true
+    privileged: true
+    cgroupns_mode: host
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    tmpfs:
+      - /tmp:exec
+      - /run
+    command: /lib/systemd/systemd
+provisioner:
+  name: ansible
+  inventory:
+    host_vars:
+      anydesk-${MOLECULE_DISTRO:-ubuntu2604}:
+        ansible_user: root
+verifier:
+  name: ansible
