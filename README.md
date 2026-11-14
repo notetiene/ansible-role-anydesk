@@ -9,8 +9,8 @@ Installs [AnyDesk](https://anydesk.com) from its official APT repository,
 manages the `anydesk` service and writes options to the system and per-user
 `system.conf` files.
 
-Supported platforms: Ubuntu bionic, focal, jammy, noble and resolute
-(26.04). The repository setup runs on the Debian family only; on other
+Supported platforms: Ubuntu jammy (22.04), noble (24.04) and resolute
+(26.04); CI tests jammy and resolute. The repository setup runs on the Debian family only; on other
 systems the role assumes a package manager that already knows `anydesk`.
 
 Requirements
@@ -33,7 +33,7 @@ Or in `requirements.yml`:
 ```yaml
 roles:
   - src: notetiene.anydesk
-    version: 1.1.1
+    version: 1.1.2
 ```
 
 What the role does
